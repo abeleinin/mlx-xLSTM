@@ -2,22 +2,22 @@
 
 A pure [MLX](https://github.com/ml-explore/mlx) implementation of [xLSTM: Extended Long Short-Term Memory](https://arxiv.org/abs/2405.04517) by Beck et al. (2024)
 
-# Install 
+## Install 
 
 Use the following commands to install the package:
 
 ```bash
-git clone github
+git clone git@github.com:abeleinin/mlx-xLSTM.git
 cd mlx-xLSTM/
 pip install -r requirement.txt
 pip install -e .
 ```
 
-# Usage
+## Usage
 
 If you're interested, I've created training examples in the [examples/](./examples/) directory, which showcase the different models on a variety of learning tasks.
 
-## mLSTM Training
+### mLSTM Training
 
 Here is a brief example of how to train a `mLSTM` model using this package and mlx.
 
@@ -53,7 +53,7 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 
 ![mLSTM sine function predition](./media/mLSTM_prediction.png)
 
-# Roadmap
+## Roadmap
 
 - [ ] Implenent sub-components
     - [x] `mLSTM` implementation
@@ -61,7 +61,7 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 - [ ] Add full `xLSTM` implementation
 - [ ] Add training examples
 
-# Citations
+## Citations
 
 ```bibtex
 @software{mlx2023,
@@ -82,7 +82,7 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 }
 ```
 
-# References
+## References
 
 - [xLSTM: Extended Long Short-Term Memory](https://arxiv.org/abs/2405.04517) arXiv Paper
 - [andrewgcodes/xlstm](https://github.com/andrewgcodes/xlstm) - PyTorch mLSTM + training example
