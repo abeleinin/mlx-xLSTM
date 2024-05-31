@@ -65,6 +65,14 @@ For more details, please refer to full implementation [examples/train_mLSTM.py](
 
 ![mLSTM sine function predition](./media/mLSTM_prediction.png)
 
+## Unit Tests
+
+Run unit tests:
+
+```
+python -m unittest discover tests
+```
+
 ## Roadmap
 
 - [x] Implenent sub-components
@@ -73,6 +81,7 @@ For more details, please refer to full implementation [examples/train_mLSTM.py](
     - [x] `mLSTMBlock`
     - [x] `sLSTMBlock`
 - [x] Add full `xLSTM` implementation
+- [ ] Add unit tests
 - [ ] Add training examples for each component
 - [ ] Add language model example
 

@@ -57,7 +57,7 @@ class CausalConv1d(nn.Conv1d):
 
     def __call__(self, x):
         x = super().__call__(x)
-        return x[:, :-self._padding, :]
+        return x[:, :-self._padding, ...] 
 
 def block_diag(*matrices):
     rows = sum(mat.shape[0] for mat in matrices)

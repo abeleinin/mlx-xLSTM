@@ -84,7 +84,7 @@ class mLSTMBlock(nn.Module):
         hidden_size = head_num * head_size
 
         self.norm = nn.LayerNorm(input_size)
-        self.gn = nn.GroupNorm(head_num, hidden_size)
+        self.gn = nn.GroupNorm(head_size, hidden_size)
 
         self.up_l_proj = nn.Linear(input_size, int(p_factor * input_size))
         self.up_r_proj = nn.Linear(input_size, hidden_size)
@@ -93,8 +93,8 @@ class mLSTMBlock(nn.Module):
         self.causal_conv = CausalConv1d(1, 1, kernel_size=ker_size)
         self.skip_connection = nn.Linear(int(p_factor * input_size), hidden_size)
 
-        self.W_i = nn.Linear(int(p_factor * input_size), head_num)
-        self.W_f = nn.Linear(int(p_factor * input_size), head_num)
+        self.W_i = nn.Linear(int(p_factor * input_size), head_size)
+        self.W_f = nn.Linear(int(p_factor * input_size), head_size)
         self.W_o = nn.Linear(int(p_factor * input_size), hidden_size)
         
         self.W_q = nn.Linear(int(p_factor * input_size), hidden_size)
@@ -110,21 +110,19 @@ class mLSTMBlock(nn.Module):
         x_t = self.up_l_proj(x_n)
         r_t = self.up_r_proj(x_n)
 
-        x_c = self.causal_conv(unsqueeze(x_t, 2)) # MLX Conv1D(N,L,C)
+        x_c = self.causal_conv(x_t[:, :, None, ...]) # MLX Conv1D(N,L,C)
         x_c = nn.silu(x_c).squeeze()
         x_skip = self.skip_connection(x_c)
 
-        q = self.W_q(x_c).reshape(bs, -1, self.head_size)
-        k = (self.W_k(x_c) / mx.sqrt(self.head_size)).reshape(bs, -1, self.head_size)
-        v = self.W_v(x_t).reshape(bs, -1, self.head_size)
+        q = self.W_q(x_c).reshape(bs, self.head_size, -1)
+        k = (self.W_k(x_c) / mx.sqrt(self.head_size)).reshape(bs, self.head_size, -1)
+        v = self.W_v(x_t).reshape(bs, self.head_size, -1)
 
         i_t = self.W_i(x_c)
         f_t = self.W_f(x_c)
         o = mx.sigmoid(self.W_o(x_t))
 
-        a = mx.max(f_t + m_tm1)
-        b = mx.max(i_t)
-        m_t = a if a > b else b
+        m_t = mx.maximum(f_t + m_tm1, i_t)
         i = mx.exp(i_t - m_t)
         f = mx.exp(f_t + m_tm1 - m_t)
 
@@ -143,7 +141,7 @@ class mLSTMBlock(nn.Module):
         return out + x, (c_t, n_t, m_t)
     
     def init_hidden(self, bs):
-        c_0 = mx.zeros((bs, self.head_num, self.head_size, self.head_size))
-        n_0 = mx.zeros((bs, self.head_num, self.head_size))
-        m_0 = mx.zeros((bs, self.head_num))
+        c_0 = mx.zeros((bs, self.head_size, self.head_num, self.head_num))
+        n_0 = mx.zeros((bs, self.head_size, self.head_num))
+        m_0 = mx.zeros((bs, self.head_size))
         return c_0, n_0, m_0
