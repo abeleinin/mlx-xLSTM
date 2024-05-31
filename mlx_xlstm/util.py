@@ -30,6 +30,14 @@ def clamp(x, min_value=None, max_value=None):
         x = mx.minimum(x, mx.array(max_value, dtype=x.dtype))
     return x
 
+def repeat(value, times=None):
+    if times is None:
+        while True:
+            yield value
+    else:
+        for _ in range(times):
+            yield value
+
 class CausalConv1d(nn.Conv1d):
     def __init__(
         self, 
@@ -50,3 +58,40 @@ class CausalConv1d(nn.Conv1d):
     def __call__(self, x):
         x = super().__call__(x)
         return x[:, :-self._padding, :]
+
+def block_diag(*matrices):
+    rows = sum(mat.shape[0] for mat in matrices)
+    cols = sum(mat.shape[1] for mat in matrices)
+
+    result = mx.zeros((rows, cols))
+
+    current_row = 0
+    current_col = 0
+    for mat in matrices:
+        r, c = mat.shape
+        result[current_row:current_row + r, current_col:current_col + c] = mat
+        current_row += r
+        current_col += c
+
+    return result
+
+class BlockLinear(nn.Module):
+    def __init__(self, block_dims, bias=False):
+        super().__init__()
+
+        self._blocks = [
+            mx.random.normal(size)
+            for size in block_dims
+        ]
+
+        self._bias = mx.zeros(mx.sum(block_dims)) if bias else None
+    
+    def __call__(self, x):
+        full = block_diag(*self._blocks)
+
+        out = mx.matmul(full, x)
+
+        if self._bias is not None:
+            out += self._bias
+        
+        return out

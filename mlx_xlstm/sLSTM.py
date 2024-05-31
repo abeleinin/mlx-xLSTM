@@ -1,7 +1,7 @@
 import mlx.core as mx
 import mlx.nn as nn
 
-from .util import init_orthogonal, unsqueeze
+from .util import CausalConv1d, BlockLinear, init_orthogonal, unsqueeze, enlarge_as
 
 class sLSTMCell(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -123,4 +123,85 @@ class sLSTM(nn.Module):
             for _ in self.layers
         ]
         return initial_states
- 
+
+
+class sLSTMBlock(nn.Module):
+    def __init__(
+        self,
+        inp_dim,
+        head_dim,
+        head_num,
+        ker_size = 4,
+        p_factor = 4/3,
+    ):
+        super().__init__()
+        self.inp_dim = inp_dim
+        self.head_dim = head_dim
+        self.head_num = head_num
+        
+        self.norm = nn.LayerNorm(inp_dim)
+        self.hid_norm = nn.GroupNorm(head_num, head_dim * head_num)
+
+        self.causal_conv = CausalConv1d(1, 1, kernel_size=ker_size)
+
+        self.W_z = nn.Linear(inp_dim, head_num * head_dim)
+        self.W_i = nn.Linear(inp_dim, head_num * head_dim)
+        self.W_o = nn.Linear(inp_dim, head_num * head_dim)
+        self.W_f = nn.Linear(inp_dim, head_num * head_dim)
+
+        self.R_z = BlockLinear([(head_dim, head_dim)] * head_num)
+        self.R_i = BlockLinear([(head_dim, head_dim)] * head_num)
+        self.R_o = BlockLinear([(head_dim, head_dim)] * head_num)
+        self.R_f = BlockLinear([(head_dim, head_dim)] * head_num) 
+
+        proj_dim = int(p_factor * head_num * head_dim)
+        self.up_proj = nn.Linear(head_num*head_dim, 2*proj_dim)
+        self.down_proj = nn.Linear(proj_dim, inp_dim)
+
+    def init_hidden(self):
+        n_0 = mx.ones (self.head_num * self.head_dim)
+        c_0 = mx.zeros(self.head_num * self.head_dim)
+        h_0 = mx.zeros(self.head_num * self.head_dim)
+        m_0 = mx.zeros(self.head_num * self.head_dim)
+        
+        return c_0, n_0, h_0, m_0
+    
+    def __call__(self, x, hidden_state=None, use_conv=False):
+        b, d = x.shape
+        c_tm1, n_tm1, h_tm1, m_tm1 = hidden_state
+
+        x_t = self.norm(x)
+
+        if use_conv:
+            x_c = self.causal_conv(unsqueeze(x_t, 2))
+            x_c = nn.silu(x_c).squeeze()
+        else:
+            x_c = x_t
+        
+        i_t = self.W_i(x_c) + self.R_i(h_tm1)
+        f_t = self.W_i(x_c) + self.R_i(h_tm1)
+        z_t = self.W_i(x_t) + self.R_i(h_tm1)
+        o_t = self.W_i(x_t) + self.R_i(h_tm1)
+
+        a = mx.max(f_t + m_tm1)
+        b = mx.max(i_t)
+        m_t = a if a > b else b
+        i = mx.exp(i_t - m_t)
+        f = mx.exp(f_t + m_tm1 - m_t)
+
+        z_t = mx.tanh(z_t)
+        z_t = mx.sigmoid(o_t)
+
+        c_t = enlarge_as(f, c_tm1) * c_tm1 + enlarge_as(i_t, c_tm1) * z_t
+        n_t = enlarge_as(f, n_tm1) * n_tm1 + i_t
+        h_t = (c_t/ n_t).reshape((n_t.shape[0], -1))
+        h_t = o_t * h_t
+
+        out = self.hid_norm(h_t)
+
+        out1, out2 = self.up_proj(out).split(2, axis=-1)
+
+        out = out1 + nn.gelu(out2)
+        out = self.down_proj(out)
+
+        return out + x, (c_t, n_t, h_t, m_t)
