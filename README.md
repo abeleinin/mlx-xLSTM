@@ -20,7 +20,7 @@ The models are implemented in their own respective python files in the [mlx_xlst
 | files                            | description                                                                                              |
 |----------------------------------|----------------------------------------------------------------------------------------------------------|
 | [mLSTM.py](./mlx_xlstm/mLSTM.py) | implements `mLSTM` and `mLSTMBlock` shown in [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30) |
-| [sLSTM.py](./mlx_xlstm/mLSTM.py) | implements `sLSTM` and `sLSTMBlock` shown in [(Figure 9)](https://arxiv.org/pdf/2405.04517.pdf#page=29)  |
+| [sLSTM.py](./mlx_xlstm/sLSTM.py) | implements `sLSTMCell`, `sLSTM`, and `sLSTMBlock` shown in [(Figure 9)](https://arxiv.org/pdf/2405.04517.pdf#page=29)  |
 | xLSTM.py                         | Coming Soon                                                                                              |
 
 If you're interested, I've also created a simple training example in the [examples/](./examples/) directory, which showcases how to use the different models on a simple learning task.
