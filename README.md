@@ -17,11 +17,11 @@ pip install -e .
 
 The models are implemented in their own respective python files in the [mlx_xlstm/](./mlx_xlstm/) directory. Here is an overview of what models are currently implemented:
 
-| files                            | description                                                                                              |
-|----------------------------------|----------------------------------------------------------------------------------------------------------|
-| [mLSTM.py](./mlx_xlstm/mLSTM.py) | implements `mLSTM` and `mLSTMBlock` shown in [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30) |
-| [sLSTM.py](./mlx_xlstm/sLSTM.py) | implements `sLSTMCell`, `sLSTM`, and `sLSTMBlock` shown in [(Figure 9)](https://arxiv.org/pdf/2405.04517.pdf#page=29)  |
-| xLSTM.py                         | Coming Soon                                                                                              |
+| files                            | description                                                                                                           |
+|----------------------------------|-----------------------------------------------------------------------------------------------------------------------|
+| [mLSTM.py](./mlx_xlstm/mLSTM.py) | implements `mLSTM` and `mLSTMBlock` shown in [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30)              |
+| [sLSTM.py](./mlx_xlstm/sLSTM.py) | implements `sLSTMCell`, `sLSTM`, and `sLSTMBlock` shown in [(Figure 9)](https://arxiv.org/pdf/2405.04517.pdf#page=29) |
+| [xLSTM.py](./mlx_xlstm/xLSTM.py) | implements `xLSTM`                                                                                                    |
 
 If you're interested, I've also created a simple training example in the [examples/](./examples/) directory, which showcases how to use the different models on a simple learning task.
 
@@ -72,8 +72,9 @@ For more details, please refer to full implementation [examples/train_mLSTM.py](
     - [x] `sLSTM` implementation
     - [x] `mLSTMBlock`
     - [x] `sLSTMBlock`
-- [ ] Add full `xLSTM` implementation
-- [ ] Add training examples
+- [x] Add full `xLSTM` implementation
+- [ ] Add training examples for each component
+- [ ] Add language model example
 
 ## Citations
 
