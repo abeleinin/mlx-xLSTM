@@ -15,22 +15,25 @@ pip install -e .
 
 ## Usage
 
-The models are implemented in their own respective files in the [mlx_xlstm/](./mlx_xlstm/) directory. Here is a list of the impelemented models so far:
+The models are implemented in their own respective python files in the [mlx_xlstm/](./mlx_xlstm/) directory. Here is an overview of what models are currently implemented:
 
-- [mLSTM.py](./mlx_xlstm/mLSTM.py) 
-  - implements simple `mLSTM` model
-  - implements `mLSTMBlock` [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30)
-- [sLSTM.py](./mlx_xlstm/mLSTM.py)
-  - implements simple `sLSTM` model
-- xLSTM (COMING SOON)
+| files                            | description                                                                                            |
+|----------------------------------|--------------------------------------------------------------------------------------------------------|
+| [mLSTM.py](./mlx_xlstm/mLSTM.py) | - implements `mLSTM` and `mLSTMBlock` from [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30) |
+| [sLSTM.py](./mlx_xlstm/mLSTM.py) | - implements `sLSTM`                                                                                   |
+| xLSTM.py                         | - Coming Soon                                                                                          |
 
-If you're interested, I've created training examples in the [examples/](./examples/) directory, which showcase the different models on a variety of learning tasks.
+If you're interested, I've also created a simple training example in the [examples/](./examples/) directory, which showcases how to use the different models on a simple learning task.
 
 ### mLSTM Training
 
-Here is a brief example of how to train a `mLSTM` model using this package and mlx.
+Here is a brief example on how to train a `mLSTM` model in mlx:
 
 ```python
+import mlx.core as mx
+import mlx.nn as nn
+import mlx.optimizers as optim
+
 from mlx_xlstm import mLSTM
 
 def loss_fn(model, X, states, y):
@@ -58,7 +61,7 @@ for t in range(seq_len - 1):
     mx.eval(model.parameters(), optimizer.state)
 ```
 
-For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), where I trained a model to predict a sine function.
+For more details, please refer to full implementation [examples/train_mLSTM.py](./examples/train_mLSTM.py). I was able to train a simple model which learns a sine function.
 
 ![mLSTM sine function predition](./media/mLSTM_prediction.png)
 
@@ -75,21 +78,21 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 ## Citations
 
 ```bibtex
+@article{beck2024xlstm,
+  title={xLSTM: Extended Long Short-Term Memory},
+  author={Beck, Maximilian and P{\"o}ppel, Korbinian and Spanring, Markus and Auer, Andreas and Prudnikova, Oleksandra and Kopp, Michael and Klambauer, G{\"u}nter and Brandstetter, Johannes and Hochreiter, Sepp},
+  journal={arXiv preprint arXiv:2405.04517},
+  year={2024}
+}
+```
+
+```bibtex
 @software{mlx2023,
   author = {Awni Hannun and Jagrit Digani and Angelos Katharopoulos and Ronan Collobert},
   title = {{MLX}: Efficient and flexible machine learning on Apple silicon},
   url = {https://github.com/ml-explore},
   version = {0.0},
   year = {2023},
-}
-```
-
-```bibtex
-@article{beck2024xlstm,
-  title={xLSTM: Extended Long Short-Term Memory},
-  author={Beck, Maximilian and P{\"o}ppel, Korbinian and Spanring, Markus and Auer, Andreas and Prudnikova, Oleksandra and Kopp, Michael and Klambauer, G{\"u}nter and Brandstetter, Johannes and Hochreiter, Sepp},
-  journal={arXiv preprint arXiv:2405.04517},
-  year={2024}
 }
 ```
 
