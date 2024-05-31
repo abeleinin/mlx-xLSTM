@@ -39,8 +39,8 @@ class TestMLSTM(unittest.TestCase):
 
         l, grads = loss_and_grad_fn(self.model, self.input, self.hid_0, target)
 
-        for param in self.model.parameters():
-            self.assertIsNotNone(param)
+        for grad in grads:
+            self.assertIsNotNone(grad)
 
 if __name__ == '__main__':
     unittest.main()

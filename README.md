@@ -108,6 +108,6 @@ python -m unittest discover tests
 
 ## References
 
-- [xLSTM: Extended Long Short-Term Memory](https://arxiv.org/abs/2405.04517) arXiv Paper
+- [xLSTM: Extended Long Short-Term Memory](https://arxiv.org/abs/2405.04517) - arXiv Paper
 - [andrewgcodes/xlstm](https://github.com/andrewgcodes/xlstm) - PyTorch mLSTM + training example
-- [myscience/x-lstm](https://github.com/myscience/x-lstm) - PyTorch mLSTM 
+- [myscience/x-lstm](https://github.com/myscience/x-lstm) - PyTorch xLSTM + unit tests
