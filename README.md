@@ -55,9 +55,9 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 
 ## Roadmap
 
-- [ ] Implenent sub-components
+- [x] Implenent sub-components
     - [x] `mLSTM` implementation
-    - [ ] `sLSTM` implementation
+    - [x] `sLSTM` implementation
 - [ ] Add full `xLSTM` implementation
 - [ ] Add training examples
 
