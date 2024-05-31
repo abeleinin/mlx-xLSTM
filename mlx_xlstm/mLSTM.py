@@ -1,6 +1,8 @@
 import mlx.core as mx
 import mlx.nn as nn
 
+from .util import unsqueeze
+
 class mLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
         super().__init__()
@@ -48,12 +50,10 @@ class mLSTM(nn.Module):
         kt = mx.squeeze(kt)
 
         C = ft * C_prev + it * mx.outer(vt, kt)
-        n = ft * n_prev + it * kt.reshape((kt.shape[0], 1))
+        n = ft * n_prev + it * unsqueeze(kt, 1)
 
         max_nqt = mx.abs(mx.matmul(n.T, qt)).max()
         max_nqt = 1.0 if 1.0 > max_nqt else max_nqt
-        # if 1.0 > max_nqt:
-        #     max_nqt = 1.0
 
         h_tilde = mx.matmul(C, qt) / max_nqt
         ot = mx.sigmoid(mx.matmul(self.output_gates.weight, x) + self.output_gates.bias)
