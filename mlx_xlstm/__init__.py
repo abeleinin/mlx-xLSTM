@@ -1,4 +1,4 @@
-from .mLSTM import mLSTM
+from .mLSTM import mLSTM, mLSTMBlock
 from .sLSTM import sLSTM
 
-__all__ = ["mLSTM", "sLSTM"]
+__all__ = ["mLSTM", "mLSTMBlock", "sLSTM"]

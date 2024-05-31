@@ -1,7 +1,7 @@
 import mlx.core as mx
 import mlx.nn as nn
 
-from .util import unsqueeze
+from .util import CausalConv1d, unsqueeze, enlarge_as, clamp
 
 class mLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
@@ -65,3 +65,85 @@ class mLSTM(nn.Module):
         C = mx.zeros((self.num_layers, self.num_layers))
         h = mx.zeros((self.num_layers, 1))
         return C, h
+
+
+class mLSTMBlock(nn.Module):
+    def __init__(
+        self, 
+        input_size,
+        head_size, 
+        head_num, 
+        p_factor=2, 
+        ker_size=4,
+    ):
+        super().__init__()
+        self.input_size = input_size
+        self.head_size = head_size
+        self.head_num = head_num
+
+        hidden_size = head_num * head_size
+
+        self.norm = nn.LayerNorm(input_size)
+        self.gn = nn.GroupNorm(head_num, hidden_size)
+
+        self.up_l_proj = nn.Linear(input_size, int(p_factor * input_size))
+        self.up_r_proj = nn.Linear(input_size, hidden_size)
+        self.down_proj = nn.Linear(hidden_size, input_size)
+
+        self.causal_conv = CausalConv1d(1, 1, kernel_size=ker_size)
+        self.skip_connection = nn.Linear(int(p_factor * input_size), hidden_size)
+
+        self.W_i = nn.Linear(int(p_factor * input_size), head_num)
+        self.W_f = nn.Linear(int(p_factor * input_size), head_num)
+        self.W_o = nn.Linear(int(p_factor * input_size), hidden_size)
+        
+        self.W_q = nn.Linear(int(p_factor * input_size), hidden_size)
+        self.W_k = nn.Linear(int(p_factor * input_size), hidden_size)
+        self.W_v = nn.Linear(int(p_factor * input_size), hidden_size)
+
+    def __call__(self, x, hidden_state=None):
+        bs = x.shape[0]
+        c_tm1, n_tm1, m_tm1 = hidden_state
+
+        x_n = self.norm(x)
+
+        x_t = self.up_l_proj(x_n)
+        r_t = self.up_r_proj(x_n)
+
+        x_c = self.causal_conv(unsqueeze(x_t, 2)) # MLX Conv1D(N,L,C)
+        x_c = nn.silu(x_c).squeeze()
+        x_skip = self.skip_connection(x_c)
+
+        q = self.W_q(x_c).reshape(bs, -1, self.head_size)
+        k = (self.W_k(x_c) / mx.sqrt(self.head_size)).reshape(bs, -1, self.head_size)
+        v = self.W_v(x_t).reshape(bs, -1, self.head_size)
+
+        i_t = self.W_i(x_c)
+        f_t = self.W_f(x_c)
+        o = mx.sigmoid(self.W_o(x_t))
+
+        a = mx.max(f_t + m_tm1)
+        b = mx.max(i_t)
+        m_t = a if a > b else b
+        i = mx.exp(i_t - m_t)
+        f = mx.exp(f_t + m_tm1 - m_t)
+
+        c_t = enlarge_as(f, c_tm1) * c_tm1 + enlarge_as(i, c_tm1) * mx.matmul(unsqueeze(v, -1), unsqueeze(k, -2))
+        n_t = enlarge_as(f, n_tm1) * n_tm1 + enlarge_as(i, k) * k
+        top = mx.matmul(c_t, unsqueeze(q, -1)).squeeze()
+        bot = clamp(n_t * q, min_value=-1)
+
+        h_t = (top / bot).reshape((bot.shape[0], -1))
+        h_t = o * h_t
+
+        out = self.gn(h_t) + x_skip
+        out = out * nn.silu(r_t)
+        out = self.down_proj(out)
+
+        return out + x, (c_t, n_t, m_t)
+    
+    def init_hidden(self, bs):
+        c_0 = mx.zeros((bs, self.head_num, self.head_size, self.head_size))
+        n_0 = mx.zeros((bs, self.head_num, self.head_size))
+        m_0 = mx.zeros((bs, self.head_num))
+        return c_0, n_0, m_0

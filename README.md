@@ -15,6 +15,15 @@ pip install -e .
 
 ## Usage
 
+The models are implemented in their own respective files in the [mlx_xlstm/](./mlx_xlstm/) directory. Here is a list of the impelemented models so far:
+
+- [mLSTM.py](./mlx_xlstm/mLSTM.py) 
+  - implements simple `mLSTM` model
+  - implements `mLSTMBlock` [(Figure 10)](https://arxiv.org/pdf/2405.04517.pdf#page=30)
+- [sLSTM.py](./mlx_xlstm/mLSTM.py)
+  - implements simple `sLSTM` model
+- xLSTM (COMING SOON)
+
 If you're interested, I've created training examples in the [examples/](./examples/) directory, which showcase the different models on a variety of learning tasks.
 
 ### mLSTM Training
@@ -58,6 +67,8 @@ For more detail refer to [examples/train_mLSTM.py](./examples/train_mLSTM.py), w
 - [x] Implenent sub-components
     - [x] `mLSTM` implementation
     - [x] `sLSTM` implementation
+    - [x] `mLSTMBlock`
+    - [ ] `sLSTMBlock`
 - [ ] Add full `xLSTM` implementation
 - [ ] Add training examples
 
