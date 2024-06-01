@@ -46,8 +46,7 @@ class xLSTM(nn.Module):
 
         if batch_first: 
             bs, s, i = seq.shape
-            res = seq.reshape(bs, -1)
-            res = res.reshape(s, bs, i)
+            seq = seq.reshape(s, bs, i)
         if hid is None: hid = [l.init_hidden(seq.shape[1]) for l in self.blocks]
 
         out = []
