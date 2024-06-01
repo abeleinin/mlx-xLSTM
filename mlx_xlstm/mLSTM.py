@@ -1,7 +1,7 @@
 import mlx.core as mx
 import mlx.nn as nn
 
-from .util import CausalConv1d, unsqueeze, enlarge_as, clamp
+from .util import CausalConv1d, enlarge_as, clamp
 
 class mLSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers):
@@ -50,7 +50,7 @@ class mLSTM(nn.Module):
         kt = mx.squeeze(kt)
 
         C = ft * C_prev + it * mx.outer(vt, kt)
-        n = ft * n_prev + it * unsqueeze(kt, 1)
+        n = ft * n_prev + it * kt[:, None, ...]
 
         max_nqt = mx.abs(mx.matmul(n.T, qt)).max()
         max_nqt = 1.0 if 1.0 > max_nqt else max_nqt
@@ -126,9 +126,9 @@ class mLSTMBlock(nn.Module):
         i = mx.exp(i_t - m_t)
         f = mx.exp(f_t + m_tm1 - m_t)
 
-        c_t = enlarge_as(f, c_tm1) * c_tm1 + enlarge_as(i, c_tm1) * mx.matmul(unsqueeze(v, -1), unsqueeze(k, -2))
+        c_t = enlarge_as(f, c_tm1) * c_tm1 + enlarge_as(i, c_tm1) * mx.matmul(v[..., None], k[..., None, :])
         n_t = enlarge_as(f, n_tm1) * n_tm1 + enlarge_as(i, k) * k
-        top = mx.matmul(c_t, unsqueeze(q, -1)).squeeze()
+        top = mx.matmul(c_t, q[..., None]).squeeze()
         bot = clamp(n_t * q, min_value=-1)
 
         h_t = (top / bot).reshape((bot.shape[0], -1))

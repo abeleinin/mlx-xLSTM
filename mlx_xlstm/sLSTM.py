@@ -1,7 +1,7 @@
 import mlx.core as mx
 import mlx.nn as nn
 
-from .util import CausalConv1d, BlockLinear, init_orthogonal, unsqueeze, enlarge_as
+from .util import CausalConv1d, BlockLinear, init_orthogonal, enlarge_as
 
 class sLSTMCell(nn.Module):
     def __init__(self, input_size, hidden_size):
@@ -106,7 +106,7 @@ class sLSTM(nn.Module):
                 h_t, new_state = layer(x_t, state)
                 new_states.append(new_state)
                 x_t = h_t
-            outputs.append(unsqueeze(h_t, 1))
+            outputs.append(h_t[:, None, ...])
             current_states = new_states
         
         outputs = mx.concatenate(outputs, axis=1)
@@ -173,7 +173,7 @@ class sLSTMBlock(nn.Module):
         x_t = self.norm(x)
 
         if use_conv:
-            x_c = self.causal_conv(unsqueeze(x_t, 2))
+            x_c = self.causal_conv(x_t[:, :, None, ...])
             x_c = nn.silu(x_c).squeeze()
         else:
             x_c = x_t

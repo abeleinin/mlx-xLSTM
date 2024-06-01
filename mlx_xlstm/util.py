@@ -9,14 +9,6 @@ def init_orthogonal(shape, gain=1.0):
     q *= gain
     return q
 
-def unsqueeze(arr, dim):
-    shape = list(arr.shape)
-    if dim < 0:
-        shape.insert(len(shape)+dim+1, 1)
-    else:
-        shape.insert(dim, 1)
-    return arr.reshape(shape)
-
 def enlarge_as(src, other):
     new_dims = other.ndim - src.ndim
     if new_dims > 0:
