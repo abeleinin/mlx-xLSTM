@@ -11,8 +11,8 @@ def generate_sine_wave(seq_len, num_sequences):
     y = mx.sin(x)
     
     res = mx.array(y, dtype=mx.float32).reshape(-1, 1)
-    res = mx.tile(res, (1, num_sequences))
-    return mx.expand_dims(res, axis=0)
+    res = mx.tile(res, (1, 1, num_sequences))
+    return res
 
 def loss_fn(model, X, states, y):
     return nn.losses.mse_loss(model(X, states)[0], y)
@@ -55,7 +55,7 @@ for t in range(seq_len-1):
     test_output.append(y_pred.flatten().tolist()[0])
 
 plt.figure(figsize=(10, 4))
-plt.title('Learning a Sine Function')
+plt.title('Learning: y = sin(x), [0, 2π]')
 plt.plot(data.flatten().tolist(), label='Function')
 plt.plot(test_output, label='mLSTM Prediction')
 plt.legend()

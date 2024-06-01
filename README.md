@@ -27,23 +27,25 @@ If you're interested, I've also created a simple training example in the [exampl
 
 ### mLSTM Training
 
-Here is a brief example on how to train a `mLSTM` model in mlx:
+Here is a brief example on how to train a `mLSTMBlock` in mlx:
 
 ```python
 import mlx.core as mx
 import mlx.nn as nn
 import mlx.optimizers as optim
 
-from mlx_xlstm import mLSTM
+from mlx_xlstm import mLSTMBlock
 
 def loss_fn(model, X, states, y):
     return nn.losses.mse_loss(model(X, states)[0], y) # choose loss function
 
 input_size = 1
-hidden_size = 10
-num_layers = 10
+head_dim = 4
+head_num = 8
 
-model = mLSTM(input_size, hidden_size, num_layers)
+batch_size = 5
+
+model = mLSTMBlock(input_size, head_dim, head_num)
 mx.eval(model.parameters())
 
 loss_and_grad_fn = nn.value_and_grad(model, loss_fn)
@@ -53,17 +55,17 @@ optimizer = optim.Adam(learning_rate=0.01) # choose optimizer
 data = ... # choose dataset
 
 for t in range(seq_len - 1):
-    x = data[:, t]
-    y_true = mx.broadcast_to(data[:, t+1], (hidden_size, input_size))
-    l, grads = loss_and_grad_fn(model, x, states, y_true)
+    X = data[:, t, :]
+    y = data[:, t+1, :]
+    l, grads = loss_and_grad_fn(model, X, states, y_true)
 
     optimizer.update(model, grads)
     mx.eval(model.parameters(), optimizer.state)
 ```
 
-For more details, please refer to full implementation [examples/train_mLSTM.py](./examples/train_mLSTM.py). I was able to train a simple model which learns a sine function.
+For more details, please refer to full implementation [examples/train_mLSTMBlock.py](./examples/train_mLSTMBlock.py). I was able to train a simple model which learns a sine function.
 
-![mLSTM sine function predition](./media/mLSTM_prediction.png)
+![mLSTMBlock sine function predition](./media/mLSTMBlock_sine.png)
 
 ## Unit Tests
 
