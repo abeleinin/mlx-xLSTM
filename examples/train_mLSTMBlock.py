@@ -14,8 +14,10 @@ def generate_sine_wave(seq_len, num_sequences, batch_size):
     res = mx.tile(res, (batch_size, 1, num_sequences))
     return res
 
-def loss_fn(model, X, states, y):
-    return nn.losses.mse_loss(model(X, states)[0], y)
+def loss_fn(model, X, hid, y):
+    global states
+    pred, states = model(X, hid)
+    return nn.losses.mse_loss(pred, y)
 
 input_size = 1
 head_dim = 4
@@ -34,8 +36,8 @@ optimizer = optim.Adam(learning_rate=0.01)
 
 data = generate_sine_wave(seq_len, num_sequences, batch_size)
 
+states = model.init_hidden(batch_size)
 for epoch in range(30):
-    states = model.init_hidden(batch_size)
     loss = 0
     for t in range(seq_len-1):
         X = data[:, t, :]
