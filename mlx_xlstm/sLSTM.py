@@ -159,7 +159,7 @@ class sLSTMBlock(nn.Module):
         self.down_proj = nn.Linear(proj_dim, inp_dim)
 
     def init_hidden(self):
-        n_0 = mx.ones (self.head_num * self.head_dim)
+        n_0 = mx.ones(self.head_num * self.head_dim)
         c_0 = mx.zeros(self.head_num * self.head_dim)
         h_0 = mx.zeros(self.head_num * self.head_dim)
         m_0 = mx.zeros(self.head_num * self.head_dim)
@@ -183,10 +183,8 @@ class sLSTMBlock(nn.Module):
         z_t = self.W_i(x_t) + self.R_i(h_tm1)
         o_t = self.W_i(x_t) + self.R_i(h_tm1)
 
-        a = mx.max(f_t + m_tm1)
-        b = mx.max(i_t)
-        m_t = a if a > b else b
-        i = mx.exp(i_t - m_t)
+        m_t = mx.maximum(f_t + m_tm1, i_t)
+        i_t = mx.exp(i_t - m_t)
         f = mx.exp(f_t + m_tm1 - m_t)
 
         z_t = mx.tanh(z_t)
