@@ -101,25 +101,6 @@ class mLSTMBlock(nn.Module):
         self.W_k = nn.Linear(int(p_factor * input_size), hidden_size)
         self.W_v = nn.Linear(int(p_factor * input_size), hidden_size)
 
-        self.fan_in = int(p_factor * input_size)
-        self.fan_out = hidden_size
-    
-        self.reset_parameters()
-    
-    def reset_parameters(self):
-        k = mx.sqrt(0.6 / (self.fan_in + self.fan_out))
-        
-        self.W_q.weight = mx.random.uniform(-k, k, shape=self.W_q.weight.shape)
-        self.W_k.weight = mx.random.uniform(-k, k, shape=self.W_k.weight.shape)
-        self.W_v.weight = mx.random.uniform(-k, k, shape=self.W_v.weight.shape)
-        self.W_q.bias = mx.zeros((self.input_size, 1))
-        self.W_k.bias = mx.zeros((self.input_size, 1))
-        self.W_v.bias = mx.zeros((self.input_size, 1))
-
-        for proj in [self.up_l_proj, self.up_r_proj, self.down_proj]:
-            proj.weight = mx.random.uniform(-k, k, shape=proj.weight.shape)
-            proj.bias = mx.zeros(proj.bias.shape)
-
     def __call__(self, x, hidden_state=None):
         bs = x.shape[0]
         c_tm1, n_tm1, m_tm1 = hidden_state
